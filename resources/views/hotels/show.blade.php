@@ -43,7 +43,11 @@
             @endforeach
         </div>
 
-        <button id="pesanButton" class="btn btn-success mt-3">Pesan</button>
+        <form id="transactionForm" action="{{ route('transactions.confirm') }}" method="POST">
+            @csrf
+            <input type="hidden" name="products" id="productsInput">
+            <button type="button" id="pesanButton" class="btn btn-success mt-3">Pesan</button>
+        </form>
 
         <a href="{{ url('/') }}" class="btn btn-primary mt-3">Back to Home</a>
     </div>
@@ -70,5 +74,21 @@
                 alert('Jumlah kamar yang dipesan melebihi jumlah yang tersedia.');
             }
         }
+
+        document.getElementById('pesanButton').addEventListener('click', function() {
+            const products = @json($hotel->products).map(product => {
+                const roomCount = parseInt(document.getElementById(`roomCount${product.id}`).innerText);
+                if (roomCount > 0) {
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        quantity: roomCount
+                    };
+                }
+            }).filter(product => product !== undefined);
+            document.getElementById('productsInput').value = JSON.stringify(products);
+            document.getElementById('transactionForm').submit();
+        });
     </script>
 @endsection

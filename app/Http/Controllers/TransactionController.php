@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\Transaction;
+use App\Models\TransactionDetail;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
@@ -17,36 +20,70 @@ class TransactionController extends Controller
     public function create()
     {
         $users = User::all();
-        return view('transactions.create', compact('users'));
+        $products = Product::all();
+        return view('transactions.create', compact('users', 'products'));
     }
 
-    public function store(Request $request)
+    public function simpan(Request $request)
     {
-        // $request->validate([
-        //     'user_id' => 'required|exists:users,id',
-        //     'products' => 'required|array',
-        //     'products.*.id' => 'required|exists:products,id',
-        //     'products.*.quantity' => 'required|integer|min:1',
-        // ]);
+        $totalAmount = 0;
+        $memberPoints = 0;
 
-        // $totalAmount = 0;
+        $products = json_decode($request->products, true);
 
-        // foreach ($request->products as $productData) {
-        //     $product = Product::find($productData['id']);
-        //     $totalAmount += $product->price * $productData['quantity'];
-        // }
+        if (is_array($products) || is_object($products)) {
+            foreach ($products as $productData) {
+                $product = Product::find($productData['id']);
+                $totalAmount += $product->price * $productData['quantity'];
 
-        // // Calculate tax (11% of total amount)
-        // $tax = $totalAmount * 0.11;
-        // $totalAmount += $tax;
+                // Calculate member points
+                if (in_array($product->type, ['deluxe', 'superior', 'suite'])) {
+                    $memberPoints += 5 * $productData['quantity'];
+                } else {
+                    $memberPoints += floor(($product->price * $productData['quantity']) / 300000);
+                }
 
-        // $transaction = Transaction::create([
-        //     'user_id' => $request->user_id,
-        //     'total_amount' => $totalAmount,
-        // ]);
+                // Update available_room
+                $product->available_room -= $productData['quantity'];
+                $product->save();
+            }
+        } else {
+            // Handle the case where $request->products is not an array or object
+            dd('invalid products data');
+        }
 
-        // return redirect()->route('transactions.index')
-        //     ->with('success', 'Transaction created successfully.');
+        // Calculate tax (11% of total amount)
+        $tax = $totalAmount * 0.11;
+        $totalAmountWithTax = $totalAmount + $tax;
+
+        // Create the transaction
+        $transaction = Transaction::create([
+            'user_id' => Auth::user()->id,
+            'transaction_date' => now(),
+            'total_amount' => $totalAmountWithTax,
+            'tax' => $tax,
+        ]);
+
+        // Create transaction details
+        foreach ($products as $productData) {
+            TransactionDetail::create([
+                'transaction_id' => $transaction->id,
+                'product_id' => $productData['id'],
+                'quantity' => $productData['quantity'],
+                'price' => Product::find($productData['id'])->price,
+            ]);
+        }
+
+        // Update user member points in membership table
+        $user = Auth::user();
+        // dd($user->membership);
+        $membership = $user->membership;
+        $membership->points += $memberPoints;
+        $membership->total_purchases += $totalAmount;
+        $membership->save();
+
+        return redirect()->route('transactions')
+            ->with('success', 'Transaction created successfully.');
     }
 
     public function show(Transaction $transaction)
@@ -79,5 +116,15 @@ class TransactionController extends Controller
 
         return redirect()->route('transactions.index')
             ->with('success', 'Transaction deleted successfully.');
+    }
+    public function confirm(Request $request)
+    {
+        $products = json_decode($request->products, true);
+        // dd($products);
+        $totalPrice = array_reduce($products, function ($carry, $product) {
+            return $carry + ($product['price'] * $product['quantity']);
+        }, 0);
+
+        return view('transactions.confirm  ', compact('products', 'totalPrice'));
     }
 }
