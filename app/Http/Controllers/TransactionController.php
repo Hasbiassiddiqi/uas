@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Membership;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
@@ -34,6 +35,12 @@ class TransactionController extends Controller
         if (is_array($products) || is_object($products)) {
             foreach ($products as $productData) {
                 $product = Product::find($productData['id']);
+
+                // Check if the ordered quantity is less than or equal to available rooms
+                if ($productData['quantity'] > $product->available_room) {
+                    return redirect()->back()->withErrors(['error' => 'Jumlah kamar yang dipesan melebihi jumlah kamar yang tersedia untuk produk: ' . $product->name]);
+                }
+
                 $totalAmount += $product->price * $productData['quantity'];
 
                 // Calculate member points
@@ -47,14 +54,19 @@ class TransactionController extends Controller
                 $product->available_room -= $productData['quantity'];
                 $product->save();
             }
-        } else {
-            // Handle the case where $request->products is not an array or object
-            dd('invalid products data');
         }
 
         // Calculate tax (11% of total amount)
         $tax = $totalAmount * 0.11;
         $totalAmountWithTax = $totalAmount + $tax;
+
+        // Apply points if used
+        $pointsValue = 0;
+        if ($request->points > 0) {
+            $pointsValue = $request->points * 100000;
+            $totalAmount -= $pointsValue;
+            $totalAmountWithTax = $totalAmount + ($totalAmount * 0.11);
+        }
 
         // Create the transaction
         $transaction = Transaction::create([
@@ -76,16 +88,23 @@ class TransactionController extends Controller
 
         // Update user member points in membership table
         $user = Auth::user();
-        // dd($user->membership);
         $membership = $user->membership;
-        $membership->points += $memberPoints;
-        $membership->total_purchases += $totalAmount;
+
+        if ($membership) {
+            $membership->points += $memberPoints;
+            $membership->total_purchases += $totalAmount;
+        } else {
+            $membership = new Membership([
+                'user_id' => $user->id,
+                'points' => $memberPoints,
+                'total_purchases' => $totalAmount,
+            ]);
+        }
+
         $membership->save();
 
-        return redirect()->route('transactions')
-            ->with('success', 'Transaction created successfully.');
+        return view('transactions.sucess', compact('products', 'totalAmount', 'pointsValue', 'tax', 'totalAmountWithTax'));
     }
-
     public function show(Transaction $transaction)
     {
         return view('transactions.show', compact('transaction'));
@@ -125,6 +144,21 @@ class TransactionController extends Controller
             return $carry + ($product['price'] * $product['quantity']);
         }, 0);
 
-        return view('transactions.confirm  ', compact('products', 'totalPrice'));
+        $user = Auth::user();
+        $points = $user->membership->points ?? 0;
+
+        return view('transactions.confirm', compact('products', 'totalPrice', 'points'));
+    }
+    public function confirmOrder(Request $request)
+    {
+        $products = json_decode($request->input('products'), true);
+        $totalPrice = $request->input('total_price');
+        $points = $request->input('points');
+        $pointsDiscount = $points * 100000;
+        $newTotalPrice = $totalPrice - $pointsDiscount;
+        $tax = $newTotalPrice * 0.11;
+        $grandTotal = $newTotalPrice + $tax;
+
+        return view('transactions.order_success', compact('products', 'totalPrice', 'pointsDiscount', 'tax', 'grandTotal'));
     }
 }

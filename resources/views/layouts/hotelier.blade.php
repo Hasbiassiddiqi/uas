@@ -85,14 +85,14 @@
                             <div class="navbar-nav mr-auto py-0">
                                 <a href="/"
                                     class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">Home</a>
-                                <a href="{{ route('facilities.index') }}"
-                                    class="nav-item nav-link {{ request()->is('facilities') ? 'active' : '' }}">Fasilitas</a>
                                 <a href="{{ route('hotels.index') }}"
                                     class="nav-item nav-link {{ request()->is('hotels') ? 'active' : '' }}">Hotels</a>
                                 <a href="{{ route('about') }}"
                                     class="nav-item nav-link {{ request()->is('about') ? 'active' : '' }}">About Us</a>
-                                <a href="{{ route('memberships.index') }}"
-                                    class="nav-item nav-link {{ request()->is('memberships') ? 'active' : '' }}">Member</a>
+                                @canany(['owner-only', 'staff-only'])
+                                    <a href="{{ route('memberships.index') }}"
+                                        class="nav-item nav-link {{ request()->is('memberships') ? 'active' : '' }}">Member</a>
+                                @endcanany
                             </div>
                             <div class="d-flex gap-2">
                                 @if (Auth::check())

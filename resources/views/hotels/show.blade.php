@@ -8,7 +8,9 @@
         <p>Alamat: {{ $hotel->address }}</p>
 
         <h2>Products:</h2>
-        <a href="{{ route('products.create') }}" class="btn btn-primary mb-4">Add Product</a>
+        @canany(['owner-only', 'staff-only'])
+            <a href="{{ route('products.create') }}" class="btn btn-primary mb-4">Add Product</a>
+        @endcanany
         <div class="row mt-3">
             @foreach ($hotel->products as $product)
                 <div class="col-lg-4 col-md-6 mb-4">
@@ -18,18 +20,24 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ $product->name }}</h5>
                             <p class="card-text h3 text-danger">Rp. {{ number_format($product->price, 0, ',', '.') }}</p>
-                            <p class="card-text text-danger">Available Room:
-                                {{ $product->available_room }}</p>
+                            @if ($product->available_room > 0)
+                                <p class="card-text text-danger">Available Room: {{ $product->available_room }}</p>
+                                @can('pembeli-only')
+                                    <div class="d-flex align-items-center mb-2 gap-4 justify-content-center">
+                                        <button class="btn btn-primary px-3" onclick="decreaseRoom({{ $product->id }})"
+                                            id="minusButton{{ $product->id }}">-</button>
+                                        <span id="roomCount{{ $product->id }}">0</span>
+                                        <button class="btn btn-primary px-3"
+                                            onclick="increaseRoom({{ $product->id }}, {{ $product->available_room }})"
+                                            id="plusButton{{ $product->id }}">+</button>
+                                    </div>
+                                @endcan
+                            @else
+                                <p class="card-text text-danger">Produk tidak tersedia</p>
+                            @endif
                             <div class="mt-auto">
 
-                                <div class="d-flex align-items-center mb-2 gap-4 justify-content-center">
-                                    <button class="btn btn-primary px-3" onclick="decreaseRoom({{ $product->id }})"
-                                        id="minusButton{{ $product->id }}">-</button>
-                                    <span id="roomCount{{ $product->id }}">0</span>
-                                    <button class="btn btn-primary px-3"
-                                        onclick="increaseRoom({{ $product->id }}, {{ $product->available_room }})"
-                                        id="plusButton{{ $product->id }}">+</button>
-                                </div>
+
                                 <a href="{{ route('products.show', $product->id) }}"
                                     class="btn btn-primary w-100 mb-2">Detail Product</a>
                             </div>
@@ -46,7 +54,10 @@
         <form id="transactionForm" action="{{ route('transactions.confirm') }}" method="POST">
             @csrf
             <input type="hidden" name="products" id="productsInput">
-            <button type="button" id="pesanButton" class="btn btn-success mt-3">Pesan</button>
+            @can('pembeli-only')
+                <button type="button" id="pesanButton" class="btn btn-success mt-3">Pesan</button>
+            @endcan
+
         </form>
 
         <a href="{{ url('/') }}" class="btn btn-primary mt-3">Back to Home</a>
@@ -87,6 +98,18 @@
                     };
                 }
             }).filter(product => product !== undefined);
+            if (!@json(Auth::check())) {
+                if (confirm('Harap login terlebih dahulu')) {
+                    window.location.href = '{{ route('login') }}';
+                }
+                return;
+            }
+
+            if (products.length === 0) {
+                alert('Tidak ada jumlah kamar yang dipesan.');
+                return;
+            }
+
             document.getElementById('productsInput').value = JSON.stringify(products);
             document.getElementById('transactionForm').submit();
         });
