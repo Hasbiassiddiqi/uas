@@ -47,7 +47,7 @@
                 <div class="col-lg-3 bg-dark d-none d-lg-block">
                     <a href="index.html"
                         class="navbar-brand w-100 h-100 m-0 p-0 d-flex align-items-center justify-content-center">
-                        <h1 class="m-0 text-primary text-uppercase">Hotelier</h1>
+                        <h1 class="m-0 text-primary text-uppercase">LaraLux</h1>
                     </a>
                 </div>
                 <div class="col-lg-9">
@@ -81,25 +81,36 @@
                             <span class="navbar-toggler-icon"></span>
                         </button>
                         <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+
                             <div class="navbar-nav mr-auto py-0">
-                                <a href="index.html" class="nav-item nav-link active">Home</a>
-                                <a href="about.html" class="nav-item nav-link">About</a>
-                                <a href="service.html" class="nav-item nav-link">Services</a>
-                                <a href="room.html" class="nav-item nav-link">Rooms</a>
-                                <div class="nav-item dropdown">
-                                    <a href="#" class="nav-link dropdown-toggle"
-                                        data-bs-toggle="dropdown">Pages</a>
-                                    <div class="dropdown-menu rounded-0 m-0">
-                                        <a href="booking.html" class="dropdown-item">Booking</a>
-                                        <a href="team.html" class="dropdown-item">Our Team</a>
-                                        <a href="testimonial.html" class="dropdown-item">Testimonial</a>
-                                    </div>
-                                </div>
-                                <a href="contact.html" class="nav-item nav-link">Contact</a>
+                                <a href="/"
+                                    class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">Home</a>
+                                <a href="{{ route('hotels.index') }}"
+                                    class="nav-item nav-link {{ request()->is('hotels') ? 'active' : '' }}">Hotels</a>
+                                <a href="{{ route('about') }}"
+                                    class="nav-item nav-link {{ request()->is('about') ? 'active' : '' }}">About Us</a>
+                                @canany(['owner-only', 'staff-only'])
+                                    <a href="{{ route('memberships.index') }}"
+                                        class="nav-item nav-link {{ request()->is('memberships') ? 'active' : '' }}">Member</a>
+                                @endcanany
                             </div>
-                            <a href="{{ route('login') }}"
-                                class="btn btn-primary rounded-0 py-4 px-md-5 d-none d-lg-block">Login / Register<i
-                                    class="fa fa-arrow-right ms-3"></i></a>
+                            <div class="d-flex gap-2">
+                                @if (Auth::check())
+                                    <a href="{{ route('dashboard') }}"
+                                        class="btn btn-primary rounded-0 py-4 px-md-5 d-none d-lg-block">{{ 'Hello, ' . Auth::user()->name }}<i
+                                            class="fa fa-arrow-right ms-3"></i>
+                                    </a>
+                                    <a href="{{ route('logout') }}"
+                                        class="btn btn-danger rounded-0 py-4 px-md-5 d-none d-lg-block">
+                                        Logout<i class="fa fa-arrow-right ms-3"></i>
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}"
+                                        class="btn btn-primary rounded-0 py-4 px-md-5 d-none d-lg-block">
+                                        Login / Register<i class="fa fa-arrow-right ms-3"></i>
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     </nav>
                 </div>

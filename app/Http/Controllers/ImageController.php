@@ -56,7 +56,7 @@ class ImageController extends Controller
         return redirect()->route('images.index')
             ->with('success', 'Image updated successfully.');
     }
-
+    
     public function destroy(Image $image)
     {
         $image->delete();

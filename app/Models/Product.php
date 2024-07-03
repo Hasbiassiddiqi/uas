@@ -11,7 +11,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'hotel_id', 'type', 'price'
+        'name', 'hotel_id', 'type', 'price', 'available_room'
     ];
 
     public function hotel()

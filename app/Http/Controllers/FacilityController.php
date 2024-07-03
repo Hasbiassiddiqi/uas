@@ -55,7 +55,7 @@ class FacilityController extends Controller
 
         $facility->update($request->all());
 
-        return redirect()->route('facilities.index')
+        return redirect()->route('products.show', $facility->product_id)
             ->with('success', 'Facility updated successfully.');
     }
 
@@ -63,7 +63,7 @@ class FacilityController extends Controller
     {
         $facility->delete();
 
-        return redirect()->route('facilities.index')
+        return redirect()->route('products.show', $facility->product_id)
             ->with('success', 'Facility deleted successfully.');
     }
 }

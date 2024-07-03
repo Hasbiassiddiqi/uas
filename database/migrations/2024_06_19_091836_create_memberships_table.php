@@ -8,7 +8,7 @@ class CreateMembershipsTable extends Migration
 {
     public function up()
     {
-        Schema::create('membership', function (Blueprint $table) {
+        Schema::create('memberships', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->integer('points')->default(0);

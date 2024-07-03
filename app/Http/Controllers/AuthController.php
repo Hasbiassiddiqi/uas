@@ -72,6 +72,8 @@ class AuthController extends Controller
         $email = $request->email;
         $password = $request->password;
         $user = User::where('email', $email)->first();
+        // dd($user);
+
 
         if (!$user) {
             return back()->withErrors([
@@ -106,5 +108,11 @@ class AuthController extends Controller
         Auth::login($user);
 
         return redirect()->route('login');
+    }
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        return redirect()->route('dashboard');
     }
 }

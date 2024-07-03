@@ -26,6 +26,7 @@ class HotelController extends Controller
             'phone' => 'required',
             'email' => 'required|email|unique:hotels,email',
             'rating' => 'required|numeric',
+            'image_url' => 'required',
             'type' => 'required|in:City Hotel,Residential Hotel,Motel',
         ]);
 
@@ -53,6 +54,7 @@ class HotelController extends Controller
             'phone' => 'required',
             'email' => 'required|email|unique:hotels,email,' . $hotel->id,
             'rating' => 'required|numeric',
+            'image_url' => 'required',
             'type' => 'required|in:City Hotel,Residential Hotel,Motel',
         ]);
 
