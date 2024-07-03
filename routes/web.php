@@ -59,7 +59,7 @@ Route::resource('memberships', MembershipController::class)->only(['index', 'sho
 Route::middleware(['role:Owner'])->group(function () {
     Route::resource('hotels', HotelController::class)->except(['index', 'show']);
     Route::resource('products', ProductController::class)->except(['index', 'show']);
-    // Route::resource('facilities', FacilityController::class)->except(['index', 'show']);
+    Route::resource('facilities', FacilityController::class)->except(['index', 'show']);
     Route::resource('users', UserController::class);
     Route::resource('transactions', TransactionController::class);
     Route::resource('memberships', MembershipController::class)->except(['index', 'show']);

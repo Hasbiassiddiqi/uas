@@ -3,7 +3,6 @@
 @section('content')
     <div class="container py-5">
         <h1 class="mb-4">List of Memberships</h1>
-        <a href="{{ route('memberships.create') }}" class="btn btn-primary mb-4">Add Membership</a>
         <div class="row">
             @foreach ($memberships as $membership)
                 <div class="col-lg-4 col-md-6 mb-4">

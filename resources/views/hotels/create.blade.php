@@ -34,7 +34,7 @@
                 <input type="number" class="form-control" id="exampleInputRating" name="rating" placeholder="Enter Rating...">
             </div>
             <div class="form-group">
-                <label for="exampleInputRating">Image</label>
+                <label for="exampleInputImage">Image</label>
                 <input type="text" class="form-control" id="exampleInputImage" name="image_url" placeholder="Enter Image...">
             </div>
             <div class="form-group">

@@ -232,6 +232,7 @@
     <!-- Room End -->
     <div class="container py-5">
         <h1 class="mb-4">List of Hotels</h1>
+        p
         <div class="row">
             @foreach ($hotels as $hotel)
                 <div class="col-lg-4 col-md-6 mb-4">
@@ -240,6 +241,7 @@
                             style="height: 200px; object-fit: cover;">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ $hotel->name }}</h5>
+                            <p>p</p>
                             <p class="card-text">{{ $hotel->description }}</p>
                             <p class="card-text"><strong>Address:</strong> {{ $hotel->address }}</p>
                             <p class="card-text"><strong>Rating:</strong> {{ $hotel->rating }}</p>
