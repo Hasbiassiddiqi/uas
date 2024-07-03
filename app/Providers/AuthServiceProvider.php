@@ -34,8 +34,11 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('pembeli-only', function ($user) {
             return $user->role === 'Pembeli';
         });
-        Gate::define('loggedin-only', function ($user) {
+        Gate::define('loggedin-only', function () {
             return Auth::check();
+        });
+        Gate::define('guest-only', function () {
+            return !Auth::check();
         });
     }
 }

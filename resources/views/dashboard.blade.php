@@ -36,6 +36,7 @@
     <!-- Carousel End -->
     <div class="container py-5">
         <h1 class="mb-4">List of Hotels</h1>
+        <a href="{{ route('hotels.create') }}" class="btn btn-primary mb-4">Add Hotel</a>
         <div class="row">
             @foreach ($hotels as $hotel)
                 <div class="col-lg-4 col-md-6 mb-4">

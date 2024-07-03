@@ -21,6 +21,9 @@ use App\Http\Controllers\ImageController;
 |
 */
 
+Route::get('/hotels/create', [HotelController::class, 'create'])->name('hotels.create');
+Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+
 Route::get('/', [HotelController::class, 'dashboardRoom'])->name('dashboard');
 Route::get('/dashboard', function () {
     return redirect()->route('dashboard');
@@ -56,22 +59,18 @@ Route::resource('memberships', MembershipController::class)->only(['index', 'sho
 // Route::resource('images', ImageController::class)->only(['index', 'show']);
 // Route::get("/transactions", [TransactionController::class, "create"])->name("createTran");
 
-Route::middleware(['role:Owner'])->group(function () {
+Route::middleware(['role:Owner,Staff'])->group(function () {
+    Route::get('/hotels/create', [HotelController::class, 'create'])->name('hotels.create');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::resource('hotels', HotelController::class)->except(['index', 'show']);
     Route::resource('products', ProductController::class)->except(['index', 'show']);
-    // Route::resource('facilities', FacilityController::class)->except(['index', 'show']);
+    Route::resource('facilities', FacilityController::class)->except(['index', 'show']);
     Route::resource('users', UserController::class);
     Route::resource('transactions', TransactionController::class);
-    Route::resource('memberships', MembershipController::class)->except(['index', 'show']);
     // Route::resource('images', ImageController::class)->except(['index', 'show']);
     Route::post('/hotels', [HotelController::class, 'store'])->name('hotels.store');
 });
 
-// Route::middleware(['staff'])->group(function () {
-//     Route::resource('products', ProductController::class);
-//     Route::resource('facilities', FacilityController::class);
-//     Route::resource('transactions', TransactionController::class);
-//     Route::resource('transaction_details', TransactionDetailController::class);
-//     Route::resource('memberships', MembershipController::class);
-//     Route::resource('images', ImageController::class);
-// });
+Route::middleware(['role:Owner'])->group(function () {
+    Route::resource('memberships', MembershipController::class)->except(['index', 'show']);
+});

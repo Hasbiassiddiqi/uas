@@ -66,6 +66,7 @@ class TransactionController extends Controller
             $pointsValue = $request->points * 100000;
             $totalAmount -= $pointsValue;
             $totalAmountWithTax = $totalAmount + ($totalAmount * 0.11);
+            $memberPoints = 0; // Tidak menambahkan poin jika menggunakan poin
         }
 
         // Create the transaction
@@ -91,7 +92,11 @@ class TransactionController extends Controller
         $membership = $user->membership;
 
         if ($membership) {
-            $membership->points += $memberPoints;
+            if ($request->points > 0) {
+                $membership->points -= $request->points; // Kurangi poin yang digunakan
+            } else {
+                $membership->points += $memberPoints;
+            }
             $membership->total_purchases += $totalAmount;
         } else {
             $membership = new Membership([
